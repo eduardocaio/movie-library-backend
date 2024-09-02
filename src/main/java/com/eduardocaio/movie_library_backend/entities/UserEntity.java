@@ -1,11 +1,18 @@
 package com.eduardocaio.movie_library_backend.entities;
 
+import java.io.Serializable;
+
+import org.springframework.beans.BeanUtils;
+
+import com.eduardocaio.movie_library_backend.dto.UserDTO;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,7 +23,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserEntity {
+@EqualsAndHashCode(of = "id")
+public class UserEntity implements Serializable{
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,5 +36,9 @@ public class UserEntity {
     private String email;
 
     private String password;
+
+    public UserEntity(UserDTO user){
+        BeanUtils.copyProperties(user, this);
+    }
 
 }
