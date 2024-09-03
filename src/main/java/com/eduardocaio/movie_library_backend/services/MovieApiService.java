@@ -36,10 +36,25 @@ public class MovieApiService {
 
     }
 
-    public List<MovieDTO> discover() {
+    public List<MovieDTO> discoverMovie() {
         String apiKey = "d3c279bcd29bef7b76e244f4459ff5b8";
         String language = "pt-BR";
         String url = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey + "&language=" + language;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<MovieResponseDTO> response = restTemplate.exchange(url, HttpMethod.GET, entity, MovieResponseDTO.class);
+
+        return response.getBody().getResults();
+    }
+
+    public List<MovieDTO> searchMovie(String query){
+        String apiKey = "d3c279bcd29bef7b76e244f4459ff5b8";
+        String language = "pt-BR";
+        String url = "https://api.themoviedb.org/3/search/movie?api_key="+ apiKey +"&query="+ query +"&include_adult=false&language="+ language +"&page=1";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
