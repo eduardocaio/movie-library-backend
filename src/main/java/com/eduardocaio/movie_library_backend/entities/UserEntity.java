@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.beans.BeanUtils;
 
 import com.eduardocaio.movie_library_backend.dto.UserDTO;
+import com.eduardocaio.movie_library_backend.dto.UserSignupDTO;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -55,6 +56,10 @@ public class UserEntity implements Serializable{
     private Set<Long> favoriteMovies = new HashSet<>();
 
     public UserEntity(UserDTO user){
+        BeanUtils.copyProperties(user, this);
+    }
+
+    public UserEntity(UserSignupDTO user){
         BeanUtils.copyProperties(user, this);
     }
 
