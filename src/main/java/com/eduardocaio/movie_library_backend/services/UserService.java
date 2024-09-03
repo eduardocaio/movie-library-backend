@@ -37,6 +37,12 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    public void addFavoriteMovie(Long id, String email){
+        UserEntity user = userRepository.findByEmail(email).get();
+        user.addFavoriteMovie(id);
+    }
+    
+
     private void updateData(UserDTO userDTO, UserEntity userEntity){
         if(userDTO.getName() != null){
             userEntity.setName(userDTO.getName());
