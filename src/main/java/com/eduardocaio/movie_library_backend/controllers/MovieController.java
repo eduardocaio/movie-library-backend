@@ -24,7 +24,8 @@ public class MovieController {
         return ResponseEntity.ok().body(movieApiService.discoverMovie());
     }
 
-    public ResponseEntity<List<MovieDTO>> searchMovie(String query){
+    @GetMapping(value = "/search={query}")
+    public ResponseEntity<List<MovieDTO>> searchMovie(@PathVariable("query") String query){
         return ResponseEntity.ok().body(movieApiService.searchMovie(query));
     }
 
