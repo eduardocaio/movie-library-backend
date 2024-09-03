@@ -37,11 +37,15 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public void addFavoriteMovie(Long id, String email){
-        UserEntity user = userRepository.findByEmail(email).get();
-        user.addFavoriteMovie(id);
+    public void addFavoriteMovie(Long idMovie, Long idUser){
+        UserEntity user = userRepository.findById(idUser).get();
+        user.addFavoriteMovie(idMovie);
     }
-    
+
+    public void removeFavoriteMovie(Long idMovie, Long idUser){
+        UserEntity user = userRepository.findById(idUser).get();
+        user.removeFavoriteMovie(idMovie);
+    }
 
     private void updateData(UserDTO userDTO, UserEntity userEntity){
         if(userDTO.getName() != null){
