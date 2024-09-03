@@ -41,6 +41,9 @@ public class UserEntity implements Serializable{
     private String name;
 
     @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -57,6 +60,10 @@ public class UserEntity implements Serializable{
 
     public void addFavoriteMovie(Long id){
         favoriteMovies.add(id);
+    }
+
+    public void removeFavoriteMovie(Long id){
+        favoriteMovies.remove(id);
     }
 
 }
