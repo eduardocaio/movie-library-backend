@@ -48,6 +48,11 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    public UserEntity findByUsername(String username){
+        UserEntity user = userRepository.findByUsername(username).get();
+        return user;
+    }
+
     public void addFavoriteMovie(Long idMovie, Long idUser){
         UserEntity user = userRepository.findById(idUser).get();
         user.addFavoriteMovie(idMovie);
