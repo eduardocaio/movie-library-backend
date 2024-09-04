@@ -10,12 +10,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.eduardocaio.movie_library_backend.dto.LoginRequest;
 import com.eduardocaio.movie_library_backend.dto.UserDTO;
 import com.eduardocaio.movie_library_backend.dto.UserSignupDTO;
+import com.eduardocaio.movie_library_backend.enums.StatusUser;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,6 +26,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -64,6 +68,12 @@ public class UserEntity implements Serializable{
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "tb_users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    private StatusUser status;
+
+    @OneToOne(mappedBy = "user")
+    private VerificationUserEntity verification;
 
     public UserEntity(UserDTO user){
         BeanUtils.copyProperties(user, this);

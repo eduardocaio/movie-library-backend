@@ -1,16 +1,23 @@
 package com.eduardocaio.movie_library_backend.services;
 
 import java.util.List;
+import java.util.UUID;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.eduardocaio.movie_library_backend.components.EmailServiceImpl;
 import com.eduardocaio.movie_library_backend.dto.MovieDTO;
 import com.eduardocaio.movie_library_backend.dto.UserDTO;
 import com.eduardocaio.movie_library_backend.dto.UserSignupDTO;
 import com.eduardocaio.movie_library_backend.entities.UserEntity;
+import com.eduardocaio.movie_library_backend.entities.VerificationUserEntity;
+import com.eduardocaio.movie_library_backend.enums.StatusUser;
 import com.eduardocaio.movie_library_backend.repositories.UserRepository;
+import com.eduardocaio.movie_library_backend.repositories.VerificationUserRepository;
 
 @Service
 public class UserService {
@@ -20,6 +27,18 @@ public class UserService {
 
     @Autowired
     private MovieApiService movieApiService;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private VerificationUserRepository verificationRepository;
+
+    @Autowired
+    private EmailServiceImpl emailService;
 
     public List<UserDTO> findAll(){
         List<UserEntity> users = userRepository.findAll();
@@ -33,9 +52,31 @@ public class UserService {
 
     public void signup(UserSignupDTO newUser){
         UserEntity user = new UserEntity(newUser);
-        userRepository.save(user);
+
+        user.setPassword(passwordEncoder.encode(newUser.password()));
+        user.addRole(roleService.findByDescription("BASIC"));
+        user.setStatus(StatusUser.PENDENTE);
+
+        UserEntity userSave = userRepository.save(user);
+
+        VerificationUserEntity verification = new VerificationUserEntity();
+        
+        verification.setExpiration(Instant.now().plusSeconds(600L));
+        verification.setUser(userSave);
+        verificationRepository.save(verification);
+
+        emailService.sendSimpleMessage(user.getEmail(), "Confirmação de E-mail - Biblioteca de Filmes", "Olá, " + user.getUsername() + ". É um prazer ter você conosco. Clique no link para confirmar seu e-mail: http://localhost:8080/auth/verify/" + verification.getId());
     }
     
+    public void verify(UUID code){
+        VerificationUserEntity verification = verificationRepository.findById(code).get();
+        if(verification.getId() == code){
+            verification.getUser().setStatus(StatusUser.ATIVO);
+            userRepository.save(verification.getUser());
+            verificationRepository.delete(verification);
+        }
+    }
+
     public UserDTO update(UserDTO user){
         UserEntity userEntity = userRepository.findById(user.getId()).get();
         updateData(user, userEntity);
@@ -77,6 +118,9 @@ public class UserService {
     private void updateData(UserDTO userDTO, UserEntity userEntity){
         if(userDTO.getName() != null){
             userEntity.setName(userDTO.getName());
+        }
+        if(userDTO.getUsername() != null){
+            userEntity.setUsername(userDTO.getUsername());
         }
     }
 
