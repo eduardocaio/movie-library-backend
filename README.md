@@ -109,8 +109,8 @@ Persistência: Utilização do PostgreSQL para armazenamento dos dados de usuár
 
 📨 Entrega
 
-Repositório Back-End: [Link para o código do backend](https://github.com/eduardocaio/movie-library-backend)
-Repositório Front-End: https://github.com/eduardocaio/movie-library-front?tab=readme-ov-file
+Repositório Back-End: https://github.com/eduardocaio/movie-library-backend
+Repositório Front-End: https://github.com/eduardocaio/movie-library-front
 
 Deploy: O projeto pode ser acessado em https://cajuflix.vercel.app
 
