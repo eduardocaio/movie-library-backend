@@ -57,15 +57,15 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/{id}/remove-movie/{idMovie}")
-    public ResponseEntity<Void> removeFavoriteMovie(@PathVariable("id") Long id, @PathVariable("idMovie") Long idMovie){
-        userService.removeFavoriteMovie(idMovie, id);
+    @PutMapping(value = "/{username}/remove-movie/{idMovie}")
+    public ResponseEntity<Void> removeFavoriteMovie(@PathVariable("username") String username, @PathVariable("idMovie") Long idMovie){
+        userService.removeFavoriteMovie(idMovie, username);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/{id}/add-movie/{idMovie}")
-    public ResponseEntity<Void> addFavoriteMovie(@PathVariable("id") Long id, @PathVariable("idMovie") Long idMovie){
-        userService.addFavoriteMovie(idMovie, id);
+    @PutMapping(value = "/{username}/add-movie/{idMovie}")
+    public ResponseEntity<Void> addFavoriteMovie(@PathVariable("username") String username, @PathVariable("idMovie") Long idMovie){
+        userService.addFavoriteMovie(idMovie, username);
         return ResponseEntity.ok().build();
     }
 
@@ -73,4 +73,5 @@ public class UserController {
     public ResponseEntity<List<MovieDTO>> userFavoriteMovies(@PathVariable("username") String username){
         return ResponseEntity.ok().body(userService.userFavoriteMovies(username));
     }
+
 }
