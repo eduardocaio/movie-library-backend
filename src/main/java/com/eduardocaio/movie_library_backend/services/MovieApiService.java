@@ -3,6 +3,7 @@ package com.eduardocaio.movie_library_backend.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,13 +18,15 @@ import com.eduardocaio.movie_library_backend.dto.MovieResponseDTO;
 @Service
 public class MovieApiService {
 
+    @Value("${tmdb.api.key}")
+    private String apiKey;
+
     @Autowired
     private RestTemplate restTemplate;
 
     public MovieDTO findMovie(Long id) {
-        String apiKey = "d3c279bcd29bef7b76e244f4459ff5b8";
-        String language = "pt-BR";
-        String url = "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + apiKey + "&language=" + language;
+      
+        String url = "https://api.themoviedb.org/3/movie/" + id + "?api_key=" + apiKey + "&language=pt-BR";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -37,9 +40,8 @@ public class MovieApiService {
     }
 
     public List<MovieDTO> discoverMovie() {
-        String apiKey = "d3c279bcd29bef7b76e244f4459ff5b8";
-        String language = "pt-BR";
-        String url = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey + "&language=" + language;
+  
+        String url = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey + "&language=pt-BR";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -52,9 +54,8 @@ public class MovieApiService {
     }
 
     public List<MovieDTO> searchMovie(String query){
-        String apiKey = "d3c279bcd29bef7b76e244f4459ff5b8";
-        String language = "pt-BR";
-        String url = "https://api.themoviedb.org/3/search/movie?api_key="+ apiKey +"&query="+ query +"&include_adult=false&language="+ language +"&page=1";
+
+        String url = "https://api.themoviedb.org/3/search/movie?api_key="+ apiKey +"&query="+ query +"&include_adult=false&language=pt-BR&page=1";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

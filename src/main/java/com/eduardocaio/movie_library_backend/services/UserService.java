@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +17,15 @@ import com.eduardocaio.movie_library_backend.dto.UserSignupDTO;
 import com.eduardocaio.movie_library_backend.entities.UserEntity;
 import com.eduardocaio.movie_library_backend.entities.VerificationUserEntity;
 import com.eduardocaio.movie_library_backend.enums.StatusUser;
+import com.eduardocaio.movie_library_backend.exceptions.SignupException;
 import com.eduardocaio.movie_library_backend.repositories.UserRepository;
 import com.eduardocaio.movie_library_backend.repositories.VerificationUserRepository;
 
 @Service
 public class UserService {
+
+    @Value("${host.front.mail}")
+    private String linkFront;
 
     @Autowired
     private UserRepository userRepository;
@@ -50,7 +55,16 @@ public class UserService {
         return user;
     }
 
+
     public void signup(UserSignupDTO newUser){
+
+        if(userRepository.findByUsername(newUser.username()).isPresent()){
+            throw new SignupException("Nome de usuário já cadastrado!");
+        }
+        if(userRepository.findByEmail(newUser.email()).isPresent()){
+            throw new SignupException("E-mail já cadastrado!");
+        }
+
         UserEntity user = new UserEntity(newUser);
 
         user.setPassword(passwordEncoder.encode(newUser.password()));
@@ -65,7 +79,7 @@ public class UserService {
         verification.setUser(userSave);
         verificationRepository.save(verification);
 
-        emailService.sendSimpleMessage(user.getEmail(), "Confirmação de E-mail - Biblioteca de Filmes", "Olá, " + user.getUsername() + ". É um prazer ter você conosco. Clique no link para confirmar seu e-mail: http://localhost:8080/auth/verify/" + verification.getId());
+        emailService.sendSimpleMessage(user.getEmail(), "Confirmação de E-mail - CaJuFlix", "Olá, " + user.getName() + ". É um prazer ter você conosco. Clique no link para confirmar seu e-mail: "+ linkFront + verification.getId());
     }
     
     public void verify(UUID code){
@@ -94,14 +108,14 @@ public class UserService {
         return user;
     }
 
-    public void addFavoriteMovie(Long idMovie, Long idUser){
-        UserEntity user = userRepository.findById(idUser).get();
+    public void addFavoriteMovie(Long idMovie, String username){
+        UserEntity user = userRepository.findByUsername(username).get();
         user.addFavoriteMovie(idMovie);
         userRepository.save(user);
     }
 
-    public void removeFavoriteMovie(Long idMovie, Long idUser){
-        UserEntity user = userRepository.findById(idUser).get();
+    public void removeFavoriteMovie(Long idMovie, String username){
+        UserEntity user = userRepository.findByUsername(username).get();
         user.removeFavoriteMovie(idMovie);
         userRepository.save(user);
     }
