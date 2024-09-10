@@ -17,7 +17,9 @@ import com.eduardocaio.movie_library_backend.dto.UserSignupDTO;
 import com.eduardocaio.movie_library_backend.entities.UserEntity;
 import com.eduardocaio.movie_library_backend.entities.VerificationUserEntity;
 import com.eduardocaio.movie_library_backend.enums.StatusUser;
+import com.eduardocaio.movie_library_backend.exceptions.LoginException;
 import com.eduardocaio.movie_library_backend.exceptions.SignupException;
+import com.eduardocaio.movie_library_backend.exceptions.VerificationException;
 import com.eduardocaio.movie_library_backend.repositories.UserRepository;
 import com.eduardocaio.movie_library_backend.repositories.VerificationUserRepository;
 
@@ -45,23 +47,22 @@ public class UserService {
     @Autowired
     private EmailServiceImpl emailService;
 
-    public List<UserDTO> findAll(){
+    public List<UserDTO> findAll() {
         List<UserEntity> users = userRepository.findAll();
         return users.stream().map(UserDTO::new).toList();
     }
 
-    public UserDTO findById(Long id){
+    public UserDTO findById(Long id) {
         UserDTO user = new UserDTO(userRepository.findById(id).get());
         return user;
     }
 
+    public void signup(UserSignupDTO newUser) {
 
-    public void signup(UserSignupDTO newUser){
-
-        if(userRepository.findByUsername(newUser.username()).isPresent()){
+        if (userRepository.findByUsername(newUser.username()).isPresent()) {
             throw new SignupException("Nome de usuário já cadastrado!");
         }
-        if(userRepository.findByEmail(newUser.email()).isPresent()){
+        if (userRepository.findByEmail(newUser.email()).isPresent()) {
             throw new SignupException("E-mail já cadastrado!");
         }
 
@@ -74,53 +75,84 @@ public class UserService {
         UserEntity userSave = userRepository.save(user);
 
         VerificationUserEntity verification = new VerificationUserEntity();
-        
+
         verification.setExpiration(Instant.now().plusSeconds(600L));
         verification.setUser(userSave);
         verificationRepository.save(verification);
 
-        emailService.sendSimpleMessage(user.getEmail(), "Confirmação de E-mail - CaJuFlix", "Olá, " + user.getName() + ". É um prazer ter você conosco. Clique no link para confirmar seu e-mail: "+ linkFront + verification.getId());
-    }
-    
-    public void verify(UUID code){
-        VerificationUserEntity verification = verificationRepository.findById(code).get();
-        if(verification.getId() == code){
-            verification.getUser().setStatus(StatusUser.ATIVO);
-            userRepository.save(verification.getUser());
-            verificationRepository.delete(verification);
-        }
+        emailService.sendSimpleMessage(user.getEmail(), "Confirmação de E-mail - CaJuFlix",
+                "Olá, " + user.getName() + ". É um prazer ter você conosco. Clique no link para confirmar seu e-mail: "
+                        + linkFront + "auth/verify/" + verification.getId());
     }
 
-    public UserDTO update(UserDTO user){
+    public void verify(UUID code) {
+        VerificationUserEntity verification = verificationRepository.findById(code).get();
+        if (verification.getExpiration().isBefore(Instant.now()) || verification.getId() == code) {
+            verificationRepository.delete(verification);
+            throw new VerificationException("Link de confirmação inválido ou expirado. Favor solicitar um novo link!");
+        }
+
+        verification.getUser().setStatus(StatusUser.ATIVO);
+        userRepository.save(verification.getUser());
+        verificationRepository.delete(verification);
+    }
+
+    public void forgotPassword(String email) {
+        UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new LoginException("E-mail não encontrado"));
+
+        VerificationUserEntity verification = new VerificationUserEntity();
+
+        verification.setExpiration(Instant.now().plusSeconds(600L));
+        verification.setUser(user);
+        verificationRepository.save(verification);
+
+        emailService.sendSimpleMessage(user.getEmail(), "Redefinir Senha - CaJuFlix", "Olá, " + user.getName()
+                + ". Houve uma solicitação de redefinição de senha para sua conta. Clique no link para prosseguir com a redefinição: "
+                + linkFront + "auth/forgot-password/" + verification.getId());
+    }
+
+    public void updatePassword(UUID code, String newPassword) {
+        VerificationUserEntity verification = verificationRepository.findById(code).orElseThrow(() -> new VerificationException("Link de redefinição inválido. Verifique sua caixa de entrada para o link correto ou solicite um novo!"));
+        if (verification.getExpiration().isBefore(Instant.now()) || verification.getId() != code) {
+            verificationRepository.delete(verification);
+            throw new VerificationException("Link de redefinição inválido ou expirado. Favor solicitar um novo link!");
+        }
+
+        verification.getUser().setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(verification.getUser());
+        verificationRepository.delete(verification);
+    }
+
+    public UserDTO update(UserDTO user) {
         UserEntity userEntity = userRepository.findById(user.getId()).get();
         updateData(user, userEntity);
         UserDTO userDTO = new UserDTO(userRepository.save(userEntity));
         return userDTO;
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         UserEntity user = userRepository.findById(id).get();
         userRepository.delete(user);
     }
 
-    public UserEntity findByUsername(String username){
+    public UserEntity findByUsername(String username) {
         UserEntity user = userRepository.findByUsername(username).get();
         return user;
     }
 
-    public void addFavoriteMovie(Long idMovie, String username){
+    public void addFavoriteMovie(Long idMovie, String username) {
         UserEntity user = userRepository.findByUsername(username).get();
         user.addFavoriteMovie(idMovie);
         userRepository.save(user);
     }
 
-    public void removeFavoriteMovie(Long idMovie, String username){
+    public void removeFavoriteMovie(Long idMovie, String username) {
         UserEntity user = userRepository.findByUsername(username).get();
         user.removeFavoriteMovie(idMovie);
         userRepository.save(user);
     }
 
-    public List<MovieDTO> userFavoriteMovies(String username){
+    public List<MovieDTO> userFavoriteMovies(String username) {
         UserEntity user = userRepository.findByUsername(username).get();
         List<MovieDTO> movies = new ArrayList<>();
         for (Long movie : user.getFavoriteMovies()) {
@@ -129,11 +161,11 @@ public class UserService {
         return movies;
     }
 
-    private void updateData(UserDTO userDTO, UserEntity userEntity){
-        if(userDTO.getName() != null){
+    private void updateData(UserDTO userDTO, UserEntity userEntity) {
+        if (userDTO.getName() != null) {
             userEntity.setName(userDTO.getName());
         }
-        if(userDTO.getUsername() != null){
+        if (userDTO.getUsername() != null) {
             userEntity.setUsername(userDTO.getUsername());
         }
     }
