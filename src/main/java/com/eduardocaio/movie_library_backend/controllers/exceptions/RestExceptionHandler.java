@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.eduardocaio.movie_library_backend.exceptions.LoginException;
 import com.eduardocaio.movie_library_backend.exceptions.SignupException;
+import com.eduardocaio.movie_library_backend.exceptions.VerificationException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -30,6 +31,17 @@ public class RestExceptionHandler {
     private ResponseEntity<StandardError> loginExceptionHandler(LoginException exception, HttpServletRequest request){
         StandardError error = new StandardError();
         error.setError("Username or password invalid");
+        error.setMessage(exception.getMessage());
+        error.setPath(request.getRequestURI());
+        error.setStatus(HttpStatus.UNAUTHORIZED.value());
+        error.setTimestamp(Instant.now());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(VerificationException.class)
+    private ResponseEntity<StandardError> verificationExceptionHandler(VerificationException exception, HttpServletRequest request){
+        StandardError error = new StandardError();
+        error.setError("Expired or invalid code");
         error.setMessage(exception.getMessage());
         error.setPath(request.getRequestURI());
         error.setStatus(HttpStatus.UNAUTHORIZED.value());
