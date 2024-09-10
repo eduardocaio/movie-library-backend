@@ -136,7 +136,7 @@ public class UserService {
     }
 
     public UserEntity findByUsername(String username) {
-        UserEntity user = userRepository.findByUsername(username).get();
+        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new LoginException("Usuário não existe!"));
         return user;
     }
 
