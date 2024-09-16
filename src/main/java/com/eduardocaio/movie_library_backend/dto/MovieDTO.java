@@ -1,7 +1,8 @@
 package com.eduardocaio.movie_library_backend.dto;
 
-import java.util.List;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.ArrayList;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,10 +23,16 @@ public class MovieDTO {
 
     private String poster_path;
 
+    private String backdrop_path;
+
     private LocalDate release_date;
 
     private Double vote_average;
 
-    private List<String> origin_country;
+    private List<ActorDTO> actors = new ArrayList<>();
+
+    public void addActor(ActorDTO actor){
+        actors.add(actor);
+    }
 
 }
