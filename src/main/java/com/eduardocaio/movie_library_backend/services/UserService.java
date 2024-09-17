@@ -76,7 +76,7 @@ public class UserService {
 
         VerificationUserEntity verification = new VerificationUserEntity();
 
-        verification.setExpiration(Instant.now().plusSeconds(600L));
+        verification.setExpiration(Instant.now().plusSeconds(60L));
         verification.setUser(userSave);
         verificationRepository.save(verification);
 
@@ -86,7 +86,9 @@ public class UserService {
     }
 
     public void verify(UUID code) {
-        VerificationUserEntity verification = verificationRepository.findById(code).orElseThrow(() -> new VerificationException("Link de confirmação inválido ou expirado. Favor solicitar um novo link!"));
+        VerificationUserEntity verification = verificationRepository.findById(code)
+                .orElseThrow(() -> new VerificationException(
+                        "Link de confirmação inválido ou expirado. Favor solicitar um novo link!"));
         if (verification.getExpiration().isBefore(Instant.now()) || verification.getId() != code) {
             verificationRepository.delete(verification);
             throw new VerificationException("Link de confirmação inválido ou expirado. Favor solicitar um novo link!");
@@ -97,8 +99,24 @@ public class UserService {
         verificationRepository.delete(verification);
     }
 
+    public void newCodeVerify(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new LoginException("E-mail não encontrado"));
+
+        VerificationUserEntity verification = new VerificationUserEntity();
+
+        verification.setExpiration(Instant.now().plusSeconds(600L));
+        verification.setUser(user);
+        verificationRepository.save(verification);
+
+        emailService.sendSimpleMessage(user.getEmail(), "Confirmação de E-mail - CaJuFlix",
+                "Olá, " + user.getName() + ". É um prazer ter você conosco. Clique no link para confirmar seu e-mail: "
+                        + linkFront + "auth/verify/" + verification.getId());
+    }
+
     public void forgotPassword(String email) {
-        UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new LoginException("E-mail não encontrado"));
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new LoginException("E-mail não encontrado"));
 
         VerificationUserEntity verification = new VerificationUserEntity();
 
@@ -112,7 +130,9 @@ public class UserService {
     }
 
     public void updatePassword(UUID code, String newPassword) {
-        VerificationUserEntity verification = verificationRepository.findById(code).orElseThrow(() -> new VerificationException("Link de redefinição inválido. Verifique sua caixa de entrada para o link correto ou solicite um novo!"));
+        VerificationUserEntity verification = verificationRepository.findById(code)
+                .orElseThrow(() -> new VerificationException(
+                        "Link de redefinição inválido. Verifique sua caixa de entrada para o link correto ou solicite um novo!"));
         if (verification.getExpiration().isBefore(Instant.now()) || verification.getId() != code) {
             verificationRepository.delete(verification);
             throw new VerificationException("Link de redefinição inválido ou expirado. Favor solicitar um novo link!");
@@ -136,7 +156,8 @@ public class UserService {
     }
 
     public UserEntity findByUsername(String username) {
-        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new LoginException("Usuário não existe!"));
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new LoginException("Usuário não existe!"));
         return user;
     }
 

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.eduardocaio.movie_library_backend.dto.ForgotPasswordRequest;
+import com.eduardocaio.movie_library_backend.dto.EmailRequest;
 import com.eduardocaio.movie_library_backend.dto.LoginRequest;
 import com.eduardocaio.movie_library_backend.dto.LoginResponse;
 import com.eduardocaio.movie_library_backend.dto.NewPasswordRequest;
@@ -52,7 +52,7 @@ public class TokenController {
     }
 
     @PostMapping(value = "/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest forgot){
+    public ResponseEntity<Void> forgotPassword(@RequestBody EmailRequest forgot){
         userService.forgotPassword(forgot.email());
         return ResponseEntity.ok().build();
     }
@@ -60,6 +60,12 @@ public class TokenController {
     @PutMapping(value = "/forgot-password/{code}")
     public ResponseEntity<Void> updatePassword(@PathVariable("code") UUID code, @RequestBody NewPasswordRequest newPassword){
         userService.updatePassword(code, newPassword.password());
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(value = "/new-verification-code")
+    public ResponseEntity<Void> newVerifyCode(@RequestBody EmailRequest emailRequest){
+        userService.newCodeVerify(emailRequest.email());
         return ResponseEntity.ok().build();
     }
 }
