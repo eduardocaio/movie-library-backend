@@ -86,8 +86,8 @@ public class UserService {
     }
 
     public void verify(UUID code) {
-        VerificationUserEntity verification = verificationRepository.findById(code).get();
-        if (verification.getExpiration().isBefore(Instant.now()) || verification.getId() == code) {
+        VerificationUserEntity verification = verificationRepository.findById(code).orElseThrow(() -> new VerificationException("Link de confirmação inválido ou expirado. Favor solicitar um novo link!"));
+        if (verification.getExpiration().isBefore(Instant.now()) || verification.getId() != code) {
             verificationRepository.delete(verification);
             throw new VerificationException("Link de confirmação inválido ou expirado. Favor solicitar um novo link!");
         }
