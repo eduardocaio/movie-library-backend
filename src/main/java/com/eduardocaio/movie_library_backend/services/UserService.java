@@ -76,7 +76,7 @@ public class UserService {
 
         VerificationUserEntity verification = new VerificationUserEntity();
 
-        verification.setExpiration(Instant.now().plusSeconds(60L));
+        verification.setExpiration(Instant.now().plusSeconds(600L));
         verification.setUser(userSave);
         verificationRepository.save(verification);
 
